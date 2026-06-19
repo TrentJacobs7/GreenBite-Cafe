@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://greenbite-cafe.netlify.app/sitemap.xml

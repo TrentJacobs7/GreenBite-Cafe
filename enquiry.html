@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Catering Enquiry - GreenBite Café | Johannesburg</title>
+<meta name="description" content="Request a catering quote from GreenBite Café in Johannesburg. Tell us your event date, guest count and package, and we'll respond with pricing and availability.">
+<link rel="stylesheet" href="Css/style.css">
+</head>
+<body>
+<header>
+<nav>
+<a href="index.html" class="logo">GreenBite</a>
+<ul>
+<li><a href="index.html">Home</a></li>
+<li><a href="AboutUs.html">About Us</a></li>
+<li><a href="Menu.html">Menu</a></li>
+<li><a href="Deals.html">Specials</a></li>
+<li><a href="Reviews.html">Reviews</a></li>
+<li><a href="enquiry.html">Catering</a></li>
+<li><a href="Contact.html">Contact</a></li>
+</ul>
+</nav>
+</header>
+
+<div class="container" style="margin-top: 60px;">
+  <h1 class="section-title">Catering &amp; Large Order Enquiries</h1>
+  <p style="text-align: center; font-size: 1.2rem; max-width: 700px; margin: 0 auto 50px;">
+    Planning an event? Tell us a few details below and we'll get back to you with an estimated cost and availability.
+  </p>
+
+  <div class="card" style="max-width: 700px; margin: 0 auto; padding: 40px;">
+    <form id="enquiryForm" novalidate>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="fullName">Full Name</label>
+          <input type="text" id="fullName" name="fullName" placeholder="Your full name" minlength="2" required>
+          <span class="error-message" id="error-fullName">Please enter your full name (at least 2 characters).</span>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" name="email" placeholder="you@example.com" required>
+          <span class="error-message" id="error-email">Please enter a valid email address.</span>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="phone">Phone Number</label>
+          <input type="tel" id="phone" name="phone" placeholder="082 123 4567" pattern="^[0-9+\s()-]{10,15}$" required>
+          <span class="error-message" id="error-phone">Please enter a valid phone number (10–15 digits).</span>
+        </div>
+
+        <div class="form-group">
+          <label for="eventDate">Event Date</label>
+          <input type="date" id="eventDate" name="eventDate" required>
+          <span class="error-message" id="error-eventDate">Please choose a valid date at least 3 days from today.</span>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="guests">Number of Guests</label>
+          <input type="number" id="guests" name="guests" placeholder="e.g. 25" min="10" max="500" required>
+          <span class="error-message" id="error-guests">Catering enquiries must be for 10–500 guests.</span>
+        </div>
+
+        <div class="form-group">
+          <label for="package">Catering Package</label>
+          <select id="package" name="package" required>
+            <option value="">Select a package</option>
+            <option value="light">Light Snacks &amp; Coffee — R85 per person</option>
+            <option value="standard">Standard Buffet — R150 per person</option>
+            <option value="premium">Premium Buffet — R220 per person</option>
+          </select>
+          <span class="error-message" id="error-package">Please select a catering package.</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="details">Additional Requirements (optional)</label>
+        <textarea id="details" name="details" rows="5" placeholder="Dietary requirements, venue address, set-up needs, etc."></textarea>
+      </div>
+
+      <button type="submit" class="btn" style="width: 100%; font-size: 1.1rem;">Request a Quote</button>
+
+      <div class="loading-spinner" id="loadingSpinner">Sending your enquiry...</div>
+    </form>
+
+    <div id="enquiryResponse"></div>
+  </div>
+</div>
+
+<footer>
+<p>&copy; 2026 GreenBite Café | Johannesburg</p>
+</footer>
+
+<script>
+(function () {
+  const form = document.getElementById('enquiryForm');
+  const responseBox = document.getElementById('enquiryResponse');
+  const spinner = document.getElementById('loadingSpinner');
+
+  const pricePerPerson = { light: 85, standard: 150, premium: 220 };
+  const packageNames = {
+    light: 'Light Snacks & Coffee',
+    standard: 'Standard Buffet',
+    premium: 'Premium Buffet'
+  };
+
+  function showError(fieldId, show) {
+    const field = document.getElementById(fieldId);
+    const error = document.getElementById('error-' + fieldId);
+    field.classList.toggle('invalid', show);
+    error.classList.toggle('show', show);
+  }
+
+  function validateForm() {
+    let isValid = true;
+
+    const fullName = document.getElementById('fullName').value.trim();
+    if (fullName.length < 2) { showError('fullName', true); isValid = false; }
+    else showError('fullName', false);
+
+    const email = document.getElementById('email').value.trim();
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(email)) { showError('email', true); isValid = false; }
+    else showError('email', false);
+
+    const phone = document.getElementById('phone').value.trim();
+    const phonePattern = /^[0-9+\s()-]{10,15}$/;
+    if (!phonePattern.test(phone)) { showError('phone', true); isValid = false; }
+    else showError('phone', false);
+
+    const eventDateValue = document.getElementById('eventDate').value;
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const minDate = new Date(today);
+    minDate.setDate(minDate.getDate() + 3); 
+    const chosenDate = eventDateValue ? new Date(eventDateValue) : null;
+    if (!chosenDate || chosenDate < minDate) { showError('eventDate', true); isValid = false; }
+    else showError('eventDate', false);
+
+    const guests = parseInt(document.getElementById('guests').value, 10);
+    if (!guests || guests < 10 || guests > 500) { showError('guests', true); isValid = false; }
+    else showError('guests', false);
+
+    const pkg = document.getElementById('package').value;
+    if (!pkg) { showError('package', true); isValid = false; }
+    else showError('package', false);
+
+    return isValid ? { fullName, email, phone, eventDateValue, guests, pkg } : null;
+  }
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    responseBox.style.display = 'none';
+    responseBox.classList.remove('error');
+
+    const data = validateForm();
+    if (!data) return; 
+
+    spinner.style.display = 'block';
+    form.querySelector('button[type="submit"]').disabled = true;
+
+    fetch('https://jsonplaceholder.typicode.com/posts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    })
+      .then(res => {
+        if (!res.ok) throw new Error('Network response was not ok');
+        return res.json();
+      })
+      .then(() => {
+        const estimatedCost = data.guests * pricePerPerson[data.pkg];
+        responseBox.innerHTML = `
+          <h3>Thanks, ${data.fullName}! 🎉</h3>
+          <p>Your enquiry for <strong>${data.guests} guests</strong> with the
+          <strong>${packageNames[data.pkg]}</strong> package on
+          <strong>${new Date(data.eventDateValue).toLocaleDateString('en-ZA', { year: 'numeric', month: 'long', day: 'numeric' })}</strong>
+          has been received.</p>
+          <p><strong>Estimated cost:</strong> R${estimatedCost.toLocaleString('en-ZA')}
+          (R${pricePerPerson[data.pkg]} per person)</p>
+          <p><strong>Availability:</strong> That date currently looks available — we'll
+          confirm by email at <strong>${data.email}</strong> within 24 hours.</p>
+        `;
+        responseBox.style.display = 'block';
+        form.reset();
+      })
+      .catch(() => {
+        responseBox.innerHTML = `<h3>Something went wrong</h3>
+          <p>We couldn't send your enquiry right now. Please call us on 012 345 6789 or try again shortly.</p>`;
+        responseBox.classList.add('error');
+        responseBox.style.display = 'block';
+      })
+      .finally(() => {
+        spinner.style.display = 'none';
+        form.querySelector('button[type="submit"]').disabled = false;
+      });
+  });
+
+  ['fullName','email','phone','eventDate','guests','package'].forEach(id => {
+    document.getElementById(id).addEventListener('input', validateForm);
+  });
+})();
+</script>
+
+</body>
+</html>
